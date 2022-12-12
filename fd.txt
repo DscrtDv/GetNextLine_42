@@ -1,5 +1,0 @@
-I'm just trying some things out
-It would be nice to be able to read from this fd.
-the point is to finish get next line project
-Adn for that to happen, I will need to read this file line by line
-This is the last line of this file descriptor.

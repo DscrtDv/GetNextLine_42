@@ -1,76 +1,98 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include "get_next_line.h"
-#include <fcntl.h>
-#include <unistd.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   get_next_line.c                                    :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: tcensier <marvin@codam.nl>                   +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/12/12 12:09:22 by tcensier      #+#    #+#                 */
+/*   Updated: 2022/12/12 14:52:28 by tcensier      ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
-#if !defined(BUFFER_SIZE)
+#include "get_next_line.h"
+#ifndef BUFFER_SIZE
 # define BUFFER_SIZE 24
 #endif
 
-char	*get_next_line(int fd)
+static ssize_t	ft_strchr(char *str, char c)
 {
-	static char	remainder_buffer[BUFFER_SIZE + 1];
-	char		buffer[BUFFER_SIZE + 1];
-	char	*temp;
-	char	*line;
-	ssize_t read_size;
+	ssize_t	index;
 
-	line = ft_strdup(remainder_buffer);
-	while (get_index(line, '\n') == -1)
+	if (!str)
+		return (-1);
+	index = 0;
+	while (str[index])
 	{
-		read_size = read(fd, buffer, BUFFER_SIZE);
-		if (read_size <= 0)
-			break ;
-		buffer[read_size] = '\0';
-		temp = line;
-		line = ft_strjoin(line, buffer);
-		free(temp);
+		if (str[index] == c)
+			return (index);
+		index++;
 	}
-	if (line[0] == '\0' || read_size == -1)
+	return (-1);
+}
+
+static char	*trim_line(char *line, char *saved_buffer)
+{
+	ssize_t	index_nl;
+	char	*heap_ptr;
+
+	index_nl = ft_strchr(line, '\n');
+	if (index_nl != -1)
 	{
-		free(line);
-		return (NULL);
+		ft_strlcpy(saved_buffer, line + index_nl + 1, BUFFER_SIZE + 1);
+		heap_ptr = line;
+		line = (char *)malloc(sizeof(char) * index_nl + 2);
+		if (!line)
+			return (NULL);
+		ft_strlcpy(line, heap_ptr, index_nl + 2);
+		free(heap_ptr);
 	}
-	line = get_remainder(line, remainder_buffer);
+	else
+		saved_buffer[0] = '\0';
 	return (line);
 }
 
-char	*get_remainder(char *line, char *remainder_buffer)
+char	*get_next_line(int fd)
 {
-	ssize_t	end_index;
-	char	*temp;
+	static char	saved_buffer[BUFFER_SIZE + 1];
+	char		buffer[BUFFER_SIZE + 1];
+	char		*line;
+	char		*heap_ptr;
+	ssize_t		read_position;
 
-	end_index = get_index(line, '\n');
-	if (end_index != -1)
+	line = ft_strdup(saved_buffer);
+	while (ft_strchr(line, '\n') == -1)
 	{
-		ft_strlcpy(remainder_buffer, line + end_index + 1, BUFFER_SIZE + 1);
-		temp = line;
-		line = (char *)malloc(sizeof(char) * (end_index + 2));
-		if (!line)
-			return (NULL);
-		ft_strlcpy(line, temp, end_index + 2);
-		free(temp);
+		read_position = read(fd, buffer, BUFFER_SIZE);
+		if (read_position <= 0)
+			break ;
+		buffer[read_position] = '\0';
+		heap_ptr = line;
+		line = ft_strjoin(line, buffer);
+		free(heap_ptr);
 	}
-	else
-		remainder_buffer[0] = '\0';
+	if (line[0] == '\0' || read_position == -1)
+	{
+		saved_buffer[0] = '\0';
+		free(line);
+		return (NULL);
+	}
+	line = trim_line(line, saved_buffer);
 	return (line);
 }
 
 /*
 int main(void)
 {
-	char	*line;
-	line = "wtf c\n";
 	int fd = open("input.txt", O_RDONLY);
-	printf("buffer size: %d \n", BUFFER_SIZE);
 	int i = 0;
-	while (i < 100)
+	char *line;
+
+	while (i < 10)
 	{
 		line = get_next_line(fd);
 		printf("%s", line);
-		printf("_______________\n");
+		printf("\n_________________\n");
 		free(line);
 		i++;
 	}

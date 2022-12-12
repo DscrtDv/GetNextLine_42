@@ -1,21 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   get_next_line_utils.c                              :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: tcensier <marvin@codam.nl>                   +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/12/12 14:20:00 by tcensier      #+#    #+#                 */
+/*   Updated: 2022/12/12 14:38:46 by tcensier      ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 #include <stddef.h>
 #include <stdlib.h>
-
-int	get_index(char *str, char c)
-{
-	unsigned int	index;
-
-	if (!str)
-		return (-1);
-	index = 0;
-	while (str[index])
-	{
-		if (str[index] == c)
-			return (index);
-		index++;
-	}
-	return (-1);
-}
 
 size_t	ft_strlen(const char *str)
 {
@@ -52,7 +47,7 @@ char	*ft_strdup(const char *s)
 	len = ft_strlen(s) + 1;
 	p = malloc(sizeof(char) * len);
 	if (!p)
-		return (0);
+		return (NULL);
 	ft_strlcpy(p, s, len);
 	return (p);
 }
@@ -76,10 +71,10 @@ char	*ft_strjoin(char const *s1, char const *s2)
 
 	len = ft_strlen(s1) + ft_strlen(s2);
 	if (!s1 || !s2)
-		return (0);
+		return (NULL);
 	result = malloc(sizeof(char) * len + 1);
 	if (!result)
-		return (0);
+		return (NULL);
 	ft_strlcpy(result, s1, len + 1);
 	ft_strlcat(result, s2, len + 1);
 	return (result);
