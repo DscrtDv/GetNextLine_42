@@ -9,10 +9,10 @@
 /*   Updated: 2022/12/12 14:52:28 by tcensier      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
-
 #include "get_next_line.h"
+#include <stdio.h>
 #ifndef BUFFER_SIZE
-# define BUFFER_SIZE 24
+# define BUFFER_SIZE 64
 #endif
 
 static ssize_t	ft_strchr(char *str, char c)
@@ -43,7 +43,7 @@ static char	*trim_line(char *line, char *saved_buffer)
 		heap_ptr = line;
 		line = (char *)malloc(sizeof(char) * index_nl + 2);
 		if (!line)
-			return (NULL);
+			return (free(heap_ptr), NULL);
 		ft_strlcpy(line, heap_ptr, index_nl + 2);
 		free(heap_ptr);
 	}
@@ -61,6 +61,9 @@ char	*get_next_line(int fd)
 	ssize_t		read_position;
 
 	line = ft_strdup(saved_buffer);
+	//line = NULL;
+	if (!line)
+		return (NULL);
 	while (ft_strchr(line, '\n') == -1)
 	{
 		read_position = read(fd, buffer, BUFFER_SIZE);
@@ -69,13 +72,15 @@ char	*get_next_line(int fd)
 		buffer[read_position] = '\0';
 		heap_ptr = line;
 		line = ft_strjoin(line, buffer);
+		//line = NULL;
+		if (!line)
+			return (free(heap_ptr), NULL);
 		free(heap_ptr);
 	}
 	if (line[0] == '\0' || read_position == -1)
 	{
 		saved_buffer[0] = '\0';
-		free(line);
-		return (NULL);
+		return (free(line), NULL);
 	}
 	line = trim_line(line, saved_buffer);
 	return (line);
